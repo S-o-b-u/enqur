@@ -3,7 +3,9 @@ import { createCanvas, loadImage, registerFont } from "canvas";
 import path from "path";
 
 // ✅ Register Poppins font for serverless environments (Vercel)
-const fontPath = path.join(process.cwd(), "public/fonts/Poppins-Black.ttf");
+import { fileURLToPath } from "url";
+
+const fontPath = path.resolve("./public/fonts/Poppins-Black.ttf");
 registerFont(fontPath, { family: "Poppins" });
 
 export async function GET(req: Request) {
@@ -114,7 +116,7 @@ export async function GET(req: Request) {
     if (frameText.trim() !== "") {
       try {
         const text = frameText.toUpperCase();
-        ctx.font = "bold 16px Poppins"; // ✅ Use Poppins font
+        ctx.font = "16px Poppins"; // ✅ Use Poppins font
         const textWidth = ctx.measureText(text).width;
         const rectWidth = textWidth + 16;
         const rectHeight = 30;
