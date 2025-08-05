@@ -84,21 +84,41 @@ export async function POST(req: Request) {
 
   // Frame text
   if (frameText && frameText.trim() !== "") {
-    const text = frameText.toUpperCase();
-    ctx.font = "bold 22px Arial";
-    const textWidth = ctx.measureText(text).width;
-    const rectWidth = textWidth + 20;
-    const rectHeight = 40;
-    const rectX = canvas.width / 2 - rectWidth / 2;
-    const rectY = canvas.height / 2 - rectHeight / 2 - 40;
+    try {
+      const text = frameText.toUpperCase();
+      ctx.font = "bold 22px Arial";
+      const textWidth = ctx.measureText(text).width;
+      const rectWidth = textWidth + 20;
+      const rectHeight = 40;
+      const rectX = canvas.width / 2 - rectWidth / 2;
+      const rectY = canvas.height / 2 - rectHeight / 2 - 40;
 
-    ctx.fillStyle = "rgba(255,255,255,0.95)";
-    (ctx as any).roundRect(rectX, rectY, rectWidth, rectHeight, 12);
-    ctx.fill();
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
+      // Check if roundRect is available, if not, create a fallback
+      if (!(ctx as any).roundRect) {
+        (ctx as any).roundRect = function(x: number, y: number, w: number, h: number, r: number) {
+          if (w < 2 * r) r = w / 2;
+          if (h < 2 * r) r = h / 2;
+          this.beginPath();
+          this.moveTo(x + r, y);
+          this.arcTo(x + w, y, x + w, y + h, r);
+          this.arcTo(x + w, y + h, x, y + h, r);
+          this.arcTo(x, y + h, x, y, r);
+          this.arcTo(x, y, x + w, y, r);
+          this.closePath();
+          return this;
+        };
+      }
+      (ctx as any).roundRect(rectX, rectY, rectWidth, rectHeight, 12);
+      ctx.fill();
 
-    ctx.fillStyle = fgColor;
-    ctx.textAlign = "center";
-    ctx.fillText(text, canvas.width / 2, rectY + 27);
+      ctx.fillStyle = fgColor;
+      ctx.textAlign = "center";
+      ctx.fillText(text, canvas.width / 2, rectY + 27);
+    } catch (error) {
+      console.error("Error rendering frame text:", error);
+      // Continue without the frame text if there's an error
+    }
   }
 
   // Logo (from file)

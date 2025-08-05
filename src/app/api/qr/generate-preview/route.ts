@@ -107,21 +107,41 @@ export async function GET(req: Request) {
 
     // Frame text overlay - smaller for preview
     if (frameText.trim() !== "") {
-      const text = frameText.toUpperCase();
-      ctx.font = "bold 16px Arial"; // Smaller font for preview
-      const textWidth = ctx.measureText(text).width;
-      const rectWidth = textWidth + 16;
-      const rectHeight = 30;
-      const rectX = canvas.width / 2 - rectWidth / 2;
-      const rectY = canvas.height / 2 - rectHeight / 2 - 20;
+      try {
+        const text = frameText.toUpperCase();
+        ctx.font = "bold 16px Arial"; // Smaller font for preview
+        const textWidth = ctx.measureText(text).width;
+        const rectWidth = textWidth + 16;
+        const rectHeight = 30;
+        const rectX = canvas.width / 2 - rectWidth / 2;
+        const rectY = canvas.height / 2 - rectHeight / 2 - 20;
 
-      ctx.fillStyle = "rgba(255,255,255,0.85)";
-      (ctx as any).roundRect(rectX, rectY, rectWidth, rectHeight, 8);
-      ctx.fill();
+        ctx.fillStyle = "rgba(255,255,255,0.85)";
+        // Check if roundRect is available, if not, create a fallback
+        if (!(ctx as any).roundRect) {
+          (ctx as any).roundRect = function(x: number, y: number, w: number, h: number, r: number) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+            this.beginPath();
+            this.moveTo(x + r, y);
+            this.arcTo(x + w, y, x + w, y + h, r);
+            this.arcTo(x + w, y + h, x, y + h, r);
+            this.arcTo(x, y + h, x, y, r);
+            this.arcTo(x, y, x + w, y, r);
+            this.closePath();
+            return this;
+          };
+        }
+        (ctx as any).roundRect(rectX, rectY, rectWidth, rectHeight, 8);
+        ctx.fill();
 
-      ctx.fillStyle = foregroundColor;
-      ctx.textAlign = "center";
-      ctx.fillText(text, canvas.width / 2, rectY + 20);
+        ctx.fillStyle = foregroundColor;
+        ctx.textAlign = "center";
+        ctx.fillText(text, canvas.width / 2, rectY + 20);
+      } catch (error) {
+        console.error("Error rendering frame text in preview:", error);
+        // Continue without the frame text if there's an error
+      }
     }
 
     // ENQUR logo image (instead of font text) - smaller for preview
