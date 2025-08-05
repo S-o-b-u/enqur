@@ -79,10 +79,10 @@ body::-webkit-scrollbar {
 }
 
 /* Focus styles */
-*:focus {
+/* *:focus {
   outline: 2px solid #8edaff;
   outline-offset: 2px;
-}
+} */
 
 /* Button hover effects */
 button {

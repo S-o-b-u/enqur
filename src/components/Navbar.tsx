@@ -145,10 +145,10 @@ export default function Navbar({
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
-                onClick={() => window.open('https://github.com/souvikrahut/enqur', '_blank')}
+                onClick={() => window.open('https://github.com/S-o-b-u/enqur', '_blank')}
               >
                 <WrapButton>
-                  <FiStar className="w-4 h-4" />
+                  {/* <FiStar className="w-4 h-4" /> */}
                   <span>Give A Star</span>
                 </WrapButton>
               </motion.button>
@@ -259,7 +259,7 @@ export default function Navbar({
                   whileHover={{ scale: 1.1 }}
                   onClick={() => {
                     setMenuOpen(false);
-                    setTimeout(() => window.open('https://github.com/souvikrahut/enqur', '_blank'), 200);
+                    setTimeout(() => window.open('https://github.com/S-o-b-u/enqur', '_blank'), 200);
                   }}
                   className="flex items-center gap-3 text-2xl font-semibold px-8 py-4 rounded-xl transition-all duration-200 text-white/90 hover:bg-white/10"
                 >
