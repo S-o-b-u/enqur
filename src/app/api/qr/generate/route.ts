@@ -18,10 +18,14 @@ registerFont(fontPath, { family: "Poppins" });
 export async function POST(req: Request) {
   await connectDB();
   const user = await requireAuth(req);
-  const { link, design, dotStyle, cornerStyle, backgroundColor, foregroundColor, frameText } = await req.json();
+  const { link, design, dotStyle, cornerStyle, backgroundColor, foregroundColor, frameText, resetToDefaultColors } = await req.json();
 
-  const fgColor =
-    foregroundColor || (design === "style2" ? "#4169E1" : design === "style3" ? "#FF6347" : "#000000");
+  // If resetToDefaultColors is true, use the default colors based on design
+  const fgColor = resetToDefaultColors || !foregroundColor 
+    ? (design === "style2" ? "#4169E1" : design === "style3" ? "#FF6347" : "#000000")
+    : foregroundColor;
+    
+  const bgColor = resetToDefaultColors ? "#ffffff" : backgroundColor || "#ffffff";
 
   const qrData = await QRCode.create(link, { errorCorrectionLevel: "H" });
   const size = 300;
@@ -49,7 +53,7 @@ export async function POST(req: Request) {
   }
 
   // Background
-  ctx.fillStyle = backgroundColor || "#ffffff";
+  ctx.fillStyle = bgColor;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   // Finder pattern detection
@@ -129,9 +133,10 @@ export async function POST(req: Request) {
     link,
     design,
     dotStyle,
-    cornerStyle,
-    backgroundColor,
-    foregroundColor,
+    // cornerStyle is not applicable and will be removed in future updates
+    cornerStyle: "square", // Default to square as cornerStyle is not applicable
+    backgroundColor: bgColor,
+    foregroundColor: fgColor,
     frameText,
   });
 
@@ -142,9 +147,9 @@ export async function POST(req: Request) {
       link,
       design,
       dotStyle,
-      cornerStyle,
-      backgroundColor,
-      foregroundColor,
+      "square", // Default to square as cornerStyle is not applicable
+      bgColor,
+      fgColor,
       frameText
     );
   }

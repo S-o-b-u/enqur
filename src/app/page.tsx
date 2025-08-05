@@ -28,9 +28,11 @@ export default function Home() {
   const [link, setLink] = useState("");
   const [style, setStyle] = useState("style1");
   const [dotStyle, setDotStyle] = useState("square");
+  // cornerStyle is not applicable and will be phased out
   const [cornerStyle, setCornerStyle] = useState("square");
   const [backgroundColor, setBackgroundColor] = useState("#ffffff");
   const [foregroundColor, setForegroundColor] = useState("");
+  const [resetToDefaultColors, setResetToDefaultColors] = useState(false);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
   const [qr, setQr] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -62,10 +64,11 @@ export default function Home() {
           link,
           design: style,
           dotStyle,
-          cornerStyle,
+          cornerStyle: "square", // Default to square as cornerStyle is not applicable
           backgroundColor,
           foregroundColor,
           frameText,
+          resetToDefaultColors,
         }),
       });
 
@@ -90,10 +93,11 @@ export default function Home() {
         link,
         design: style,
         dotStyle,
-        cornerStyle,
+        cornerStyle: "square", // Default to square as cornerStyle is not applicable
         backgroundColor,
         foregroundColor,
         frameText,
+        resetToDefaultColors: resetToDefaultColors.toString(),
       }).toString();
 
       const res = await fetch(`/api/qr/generate-preview?${query}`);
@@ -114,10 +118,10 @@ export default function Home() {
     link,
     style,
     dotStyle,
-    cornerStyle,
     backgroundColor,
     foregroundColor,
     frameText,
+    resetToDefaultColors,
   ]);
 
   const downloadQR = () => {
@@ -404,54 +408,29 @@ export default function Home() {
                       </div>
                     </div>
 
-                    {/* Corner Style Selection */}
+                    {/* Reset to Default Colors Button */}
                     <div className="space-y-2">
                       <label className="text-[#eafaff] text-sm flex items-center gap-1">
-                        <FiSquare className="w-4 h-4" /> Corner Style
+                        <FiSquare className="w-4 h-4" /> Default Colors
                       </label>
-                      <div className="relative">
-                        <select
-                          className="w-full px-4 py-3 bg-black/20 border border-[#2228] rounded-full focus:outline-none focus:ring-2 focus:ring-[#8edaff] text-white text-sm appearance-none pr-8 hover:bg-black/30 transition-colors backdrop-blur-sm shadow-inner"
-                          value={cornerStyle}
-                          onChange={(e) => setCornerStyle(e.target.value)}
+                      <div className="flex items-center">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setResetToDefaultColors(!resetToDefaultColors);
+                            if (resetToDefaultColors) {
+                              // If turning off reset, keep current colors
+                              setBackgroundColor(backgroundColor);
+                              setForegroundColor(foregroundColor);
+                            }
+                          }}
+                          className={`flex items-center justify-center gap-2 w-full px-4 py-3 rounded-full focus:outline-none focus:ring-2 focus:ring-[#8edaff] text-white text-sm transition-colors backdrop-blur-sm shadow-inner ${resetToDefaultColors ? 'bg-[#8edaff] text-[#0e2233]' : 'bg-black/20 border border-[#2228]'}`}
                           style={{
-                            background: "rgba(10,10,10,0.40)",
+                            background: resetToDefaultColors ? "#8edaff" : "rgba(10,10,10,0.40)",
                           }}
                         >
-                          <option
-                            value="square"
-                            className="bg-[#111] text-white py-2"
-                          >
-                            Square (Default)
-                          </option>
-                          <option
-                            value="rounded"
-                            className="bg-[#111] text-white py-2"
-                          >
-                            Rounded
-                          </option>
-                          <option
-                            value="extra-rounded"
-                            className="bg-[#111] text-white py-2"
-                          >
-                            Extra Rounded
-                          </option>
-                          <option
-                            value="dot"
-                            className="bg-[#111] text-white py-2"
-                          >
-                            Dot
-                          </option>
-                        </select>
-                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#8edaff]">
-                          <svg
-                            className="fill-current h-4 w-4"
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-                          </svg>
-                        </div>
+                          {resetToDefaultColors ? 'Using Default Colors' : 'Reset to Default Colors'}
+                        </button>
                       </div>
                     </div>
 
@@ -465,17 +444,19 @@ export default function Home() {
                           type="color"
                           value={backgroundColor}
                           onChange={(e) => setBackgroundColor(e.target.value)}
-                          className="w-10 h-10 rounded-full overflow-hidden cursor-pointer border-2 border-[#8edaff33] hover:scale-105 transition-transform shadow-md"
+                          className={`w-10 h-10 rounded-full overflow-hidden ${resetToDefaultColors ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105'} border-2 border-[#8edaff33] transition-transform shadow-md`}
+                          disabled={resetToDefaultColors}
                         />
                         <input
                           type="text"
                           value={backgroundColor}
                           onChange={(e) => setBackgroundColor(e.target.value)}
-                          className="flex-1 px-4 py-3 bg-black/20 border border-[#2228] rounded-full focus:outline-none focus:ring-2 focus:ring-[#8edaff] text-white text-sm backdrop-blur-sm shadow-inner"
+                          className={`flex-1 px-4 py-3 bg-black/20 border border-[#2228] rounded-full focus:outline-none focus:ring-2 focus:ring-[#8edaff] text-white text-sm backdrop-blur-sm shadow-inner ${resetToDefaultColors ? 'opacity-50 cursor-not-allowed' : ''}`}
                           placeholder="#ffffff"
                           style={{
                             background: "rgba(10,10,10,0.40)",
                           }}
+                          disabled={resetToDefaultColors}
                         />
                       </div>
                     </div>
@@ -497,13 +478,14 @@ export default function Home() {
                               : "#000000")
                           }
                           onChange={(e) => setForegroundColor(e.target.value)}
-                          className="w-10 h-10 rounded-full overflow-hidden cursor-pointer border-2 border-[#8edaff33] hover:scale-105 transition-transform shadow-md"
+                          className={`w-10 h-10 rounded-full overflow-hidden ${resetToDefaultColors ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:scale-105'} border-2 border-[#8edaff33] transition-transform shadow-md`}
+                          disabled={resetToDefaultColors}
                         />
                         <input
                           type="text"
                           value={foregroundColor}
                           onChange={(e) => setForegroundColor(e.target.value)}
-                          className="flex-1 px-4 py-3 bg-black/20 border border-[#2228] rounded-full focus:outline-none focus:ring-2 focus:ring-[#8edaff] text-white text-sm backdrop-blur-sm shadow-inner"
+                          className={`flex-1 px-4 py-3 bg-black/20 border border-[#2228] rounded-full focus:outline-none focus:ring-2 focus:ring-[#8edaff] text-white text-sm backdrop-blur-sm shadow-inner ${resetToDefaultColors ? 'opacity-50 cursor-not-allowed' : ''}`}
                           placeholder={
                             style === "style2"
                               ? "#4169E1"
@@ -514,6 +496,7 @@ export default function Home() {
                           style={{
                             background: "rgba(10,10,10,0.40)",
                           }}
+                          disabled={resetToDefaultColors}
                         />
                       </div>
                     </div>

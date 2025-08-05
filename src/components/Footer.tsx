@@ -175,7 +175,7 @@ export default function Footer() {
               official Telegram group.
             </p>
             <motion.a
-              href="https://t.me/your-telegram-group"
+              href="https://t.me/+iEQ3Tw9AIIk5ZGU1"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.05 }}

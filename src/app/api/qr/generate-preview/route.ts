@@ -16,16 +16,16 @@ export async function GET(req: Request) {
     const dotStyle = searchParams.get("dotStyle") || "square";
     const backgroundColor = searchParams.get("backgroundColor") || "#ffffff";
     const frameText = searchParams.get("frameText") || "";
+    const resetToDefaultColors = searchParams.get("resetToDefaultColors") === "true";
     let foregroundColor = searchParams.get("foregroundColor") || "";
 
-    if (!foregroundColor) {
-      foregroundColor =
-        design === "style2"
-          ? "#4169E1"
-          : design === "style3"
-          ? "#FF6347"
-          : "#000000";
-    }
+    // If resetToDefaultColors is true or foregroundColor is empty, use the default colors based on design
+    const fgColor = resetToDefaultColors || !foregroundColor
+      ? (design === "style2" ? "#4169E1" : design === "style3" ? "#FF6347" : "#000000")
+      : foregroundColor;
+    
+    // Use default background color if resetToDefaultColors is true
+    const bgColor = resetToDefaultColors ? "#ffffff" : backgroundColor;
 
     if (!link) return new Response("Missing link", { status: 400 });
 
@@ -64,7 +64,7 @@ export async function GET(req: Request) {
     }
 
     // Background
-    ctx.fillStyle = backgroundColor;
+    ctx.fillStyle = bgColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Finder pattern detection
@@ -87,7 +87,7 @@ export async function GET(req: Request) {
         if (qrData.modules.get(col, row)) {
           const x = qrStartX + col * cellSize;
           const y = qrStartY + row * cellSize;
-          ctx.fillStyle = foregroundColor;
+          ctx.fillStyle = fgColor;
 
           if (isFinderPattern(row, col)) {
             ctx.fillRect(x, y, cellSize, cellSize);
@@ -127,7 +127,7 @@ export async function GET(req: Request) {
         (ctx as any).roundRect(rectX, rectY, rectWidth, rectHeight, 8);
         ctx.fill();
 
-        ctx.fillStyle = foregroundColor;
+        ctx.fillStyle = fgColor;
         ctx.textAlign = "center";
         ctx.fillText(text, canvas.width / 2, rectY + 20);
       } catch (error) {
