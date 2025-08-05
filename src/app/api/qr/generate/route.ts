@@ -4,9 +4,13 @@ import User from "@/backend/models/User";
 import { requireAuth } from "@/backend/middleware/auth";
 import { sendQRCodeGenerationEmail } from "@/backend/utils/email";
 import QRCode from "qrcode";
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage, registerFont } from "canvas";
 import path from "path";
 import fs from "fs";
+
+// ✅ Register Poppins font
+const fontPath = path.join(process.cwd(), "public/fonts/Poppins-Black.ttf");
+registerFont(fontPath, { family: "Poppins" });
 
 export async function POST(req: Request) {
   await connectDB();
@@ -65,7 +69,6 @@ export async function POST(req: Request) {
         ctx.fillStyle = fgColor;
 
         if (isFinderPattern(row, col)) {
-          // Draw solid square for finder patterns
           ctx.fillRect(x, y, cellSize, cellSize);
         } else if (dotStyle === "dots") {
           ctx.beginPath();
@@ -86,7 +89,7 @@ export async function POST(req: Request) {
   if (frameText && frameText.trim() !== "") {
     try {
       const text = frameText.toUpperCase();
-      ctx.font = "bold 22px Arial";
+      ctx.font = "bold 22px Poppins"; // ✅ Use Poppins font
       const textWidth = ctx.measureText(text).width;
       const rectWidth = textWidth + 20;
       const rectHeight = 40;
@@ -94,21 +97,6 @@ export async function POST(req: Request) {
       const rectY = canvas.height / 2 - rectHeight / 2 - 40;
 
       ctx.fillStyle = "rgba(255,255,255,0.95)";
-      // Check if roundRect is available, if not, create a fallback
-      if (!(ctx as any).roundRect) {
-        (ctx as any).roundRect = function(x: number, y: number, w: number, h: number, r: number) {
-          if (w < 2 * r) r = w / 2;
-          if (h < 2 * r) r = h / 2;
-          this.beginPath();
-          this.moveTo(x + r, y);
-          this.arcTo(x + w, y, x + w, y + h, r);
-          this.arcTo(x + w, y + h, x, y + h, r);
-          this.arcTo(x, y + h, x, y, r);
-          this.arcTo(x, y, x + w, y, r);
-          this.closePath();
-          return this;
-        };
-      }
       (ctx as any).roundRect(rectX, rectY, rectWidth, rectHeight, 12);
       ctx.fill();
 
@@ -117,7 +105,6 @@ export async function POST(req: Request) {
       ctx.fillText(text, canvas.width / 2, rectY + 27);
     } catch (error) {
       console.error("Error rendering frame text:", error);
-      // Continue without the frame text if there's an error
     }
   }
 
@@ -133,6 +120,7 @@ export async function POST(req: Request) {
   const qrImageBuffer = canvas.toBuffer("image/png");
   const finalQrDataUrl = `data:image/png;base64,${qrImageBuffer.toString("base64")}`;
 
+  // Save to DB
   await QRModel.create({
     userId: user.id,
     link,

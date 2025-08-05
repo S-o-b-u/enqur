@@ -1,6 +1,10 @@
 import QRCode from "qrcode";
-import { createCanvas, loadImage } from "canvas";
+import { createCanvas, loadImage, registerFont } from "canvas";
 import path from "path";
+
+// ✅ Register Poppins font for serverless environments (Vercel)
+const fontPath = path.join(process.cwd(), "public/fonts/Poppins-Black.ttf");
+registerFont(fontPath, { family: "Poppins" });
 
 export async function GET(req: Request) {
   try {
@@ -24,13 +28,14 @@ export async function GET(req: Request) {
     if (!link) return new Response("Missing link", { status: 400 });
 
     const qrData = await QRCode.create(link, { errorCorrectionLevel: "H" });
-    // Make preview QR code smaller than the generated one (200px instead of 300px)
+
+    // Canvas setup
     const size = 200;
     const cellSize = size / qrData.modules.size;
     const canvas = createCanvas(240, 280);
     const ctx = canvas.getContext("2d");
 
-    // ✅ Attach roundRect to the context instance
+    // ✅ roundRect helper
     if (!(ctx as any).roundRect) {
       (ctx as any).roundRect = function (
         x: number,
@@ -71,9 +76,9 @@ export async function GET(req: Request) {
       );
     };
 
-    // Draw QR modules - centered in the 240x280 canvas
-    const qrStartX = (canvas.width - size) / 2; // Center horizontally
-    const qrStartY = 20; // Position from top
+    // Draw QR code
+    const qrStartX = (canvas.width - size) / 2;
+    const qrStartY = 20;
 
     for (let row = 0; row < qrData.modules.size; row++) {
       for (let col = 0; col < qrData.modules.size; col++) {
@@ -105,11 +110,11 @@ export async function GET(req: Request) {
       }
     }
 
-    // Frame text overlay - smaller for preview
+    // Frame text overlay
     if (frameText.trim() !== "") {
       try {
         const text = frameText.toUpperCase();
-        ctx.font = "bold 16px Arial"; // Smaller font for preview
+        ctx.font = "bold 16px Poppins"; // ✅ Use Poppins font
         const textWidth = ctx.measureText(text).width;
         const rectWidth = textWidth + 16;
         const rectHeight = 30;
@@ -117,21 +122,6 @@ export async function GET(req: Request) {
         const rectY = canvas.height / 2 - rectHeight / 2 - 20;
 
         ctx.fillStyle = "rgba(255,255,255,0.85)";
-        // Check if roundRect is available, if not, create a fallback
-        if (!(ctx as any).roundRect) {
-          (ctx as any).roundRect = function(x: number, y: number, w: number, h: number, r: number) {
-            if (w < 2 * r) r = w / 2;
-            if (h < 2 * r) r = h / 2;
-            this.beginPath();
-            this.moveTo(x + r, y);
-            this.arcTo(x + w, y, x + w, y + h, r);
-            this.arcTo(x + w, y + h, x, y + h, r);
-            this.arcTo(x, y + h, x, y, r);
-            this.arcTo(x, y, x + w, y, r);
-            this.closePath();
-            return this;
-          };
-        }
         (ctx as any).roundRect(rectX, rectY, rectWidth, rectHeight, 8);
         ctx.fill();
 
@@ -140,20 +130,19 @@ export async function GET(req: Request) {
         ctx.fillText(text, canvas.width / 2, rectY + 20);
       } catch (error) {
         console.error("Error rendering frame text in preview:", error);
-        // Continue without the frame text if there's an error
       }
     }
 
-    // ENQUR logo image (instead of font text) - smaller for preview
+    // ENQUR Logo
     const logoPath = path.join(process.cwd(), "public/images/logo.jpg");
     try {
       const logo = await loadImage(logoPath);
-      const logoWidth = 80; // Smaller logo for preview
-      const logoHeight = 30; // Smaller logo for preview
+      const logoWidth = 80;
+      const logoHeight = 30;
       ctx.drawImage(
         logo,
         canvas.width / 2 - logoWidth / 2,
-        230, // Adjusted position for smaller canvas
+        230,
         logoWidth,
         logoHeight
       );
@@ -161,6 +150,7 @@ export async function GET(req: Request) {
       console.warn("Logo not found:", err);
     }
 
+    // Return as PNG
     const pngBuffer = canvas.toBuffer("image/png");
     return new Response(new Uint8Array(pngBuffer), {
       headers: { "Content-Type": "image/png" },
