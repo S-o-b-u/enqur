@@ -1,12 +1,11 @@
 "use client"
-
+import type { Transition } from "framer-motion"
 import React, {
   forwardRef,
   useCallback,
   useMemo,
   useRef,
   useState,
-  type JSX,
 } from "react"
 import {
   AnimatePresence,
@@ -19,7 +18,7 @@ import {
 import { Check, Loader2, SendHorizontal, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { Button, ButtonProps } from "@/components/ui/button"
+import { Button, type ButtonProps } from "@/components/ui/button"
 
 const DRAG_CONSTRAINTS = { left: 0, right: 155 }
 const DRAG_THRESHOLD = 0.9
@@ -35,15 +34,13 @@ const ANIMATION_CONFIG = {
     stiffness: 400,
     damping: 40,
     mass: 0.8,
-  },
+  } satisfies Transition,
 }
 
-type StatusIconProps = {
-  status: string
-}
+type StatusType = "idle" | "loading" | "success" | "error"
 
-const StatusIcon: React.FC<StatusIconProps> = ({ status }) => {
-  const iconMap: Record<StatusIconProps["status"], JSX.Element> = useMemo(
+const StatusIcon = ({ status }: { status: Exclude<StatusType, "idle"> }) => {
+  const iconMap = useMemo(
     () => ({
       loading: <Loader2 className="animate-spin" size={20} />,
       success: <Check size={20} />,
@@ -52,11 +49,9 @@ const StatusIcon: React.FC<StatusIconProps> = ({ status }) => {
     []
   )
 
-  if (!iconMap[status]) return null
-
   return (
     <motion.div
-      key={crypto.randomUUID()}
+      key={status}
       initial={{ opacity: 0, scale: 0.5 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0 }}
@@ -67,9 +62,7 @@ const StatusIcon: React.FC<StatusIconProps> = ({ status }) => {
 }
 
 const useButtonStatus = (resolveTo: "success" | "error") => {
-  const [status, setStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle")
+  const [status, setStatus] = useState<StatusType>("idle")
 
   const handleSubmit = useCallback(() => {
     setStatus("loading")
@@ -90,23 +83,17 @@ const SlideButton = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const dragX = useMotionValue(0)
     const springX = useSpring(dragX, ANIMATION_CONFIG.spring)
-    const dragProgress = useTransform(
-      springX,
-      [0, DRAG_CONSTRAINTS.right],
-      [0, 1]
-    )
+    const dragProgress = useTransform(springX, [0, DRAG_CONSTRAINTS.right], [0, 1])
 
     const handleDragStart = useCallback(() => {
-      if (completed) return
-      setIsDragging(true)
+      if (!completed) setIsDragging(true)
     }, [completed])
 
     const handleDragEnd = () => {
       if (completed) return
       setIsDragging(false)
 
-      const progress = dragProgress.get()
-      if (progress >= DRAG_THRESHOLD) {
+      if (dragProgress.get() >= DRAG_THRESHOLD) {
         setCompleted(true)
         handleSubmit()
       } else {
@@ -118,9 +105,10 @@ const SlideButton = forwardRef<HTMLButtonElement, ButtonProps>(
       _event: MouseEvent | TouchEvent | PointerEvent,
       info: PanInfo
     ) => {
-      if (completed) return
-      const newX = Math.max(0, Math.min(info.offset.x, DRAG_CONSTRAINTS.right))
-      dragX.set(newX)
+      if (!completed) {
+        const newX = Math.max(0, Math.min(info.offset.x, DRAG_CONSTRAINTS.right))
+        dragX.set(newX)
+      }
     }
 
     const adjustedWidth = useTransform(springX, (x) => x + 10)
@@ -133,13 +121,13 @@ const SlideButton = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {!completed && (
           <motion.div
-            style={{
-              width: adjustedWidth,
-            }}
+            style={{ width: adjustedWidth }}
             className="absolute inset-y-0 left-0 z-0 rounded-full bg-accent"
           />
         )}
-        <AnimatePresence key={crypto.randomUUID()}>
+
+        {/* Drag handle */}
+        <AnimatePresence>
           {!completed && (
             <motion.div
               ref={dragHandleRef}
@@ -170,7 +158,8 @@ const SlideButton = forwardRef<HTMLButtonElement, ButtonProps>(
           )}
         </AnimatePresence>
 
-        <AnimatePresence key={crypto.randomUUID()}>
+        {/* Completed state */}
+        <AnimatePresence>
           {completed && (
             <motion.div
               className="absolute inset-0 flex items-center justify-center"
@@ -182,13 +171,10 @@ const SlideButton = forwardRef<HTMLButtonElement, ButtonProps>(
                 ref={ref}
                 disabled={status === "loading"}
                 {...props}
-                className={cn(
-                  "size-full rounded-full transition-all duration-300",
-                  className
-                )}
+                className={cn("size-full rounded-full transition-all duration-300", className)}
               >
-                <AnimatePresence key={crypto.randomUUID()} mode="wait">
-                  <StatusIcon status={status} />
+                <AnimatePresence mode="wait">
+                  {status !== "idle" && <StatusIcon status={status as Exclude<StatusType, "idle">} />}
                 </AnimatePresence>
               </Button>
             </motion.div>
