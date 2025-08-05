@@ -5,9 +5,9 @@ import Footer from "@/components/Footer";
 
 export default function CookiePolicy() {
   return (
-    <div className="relative min-h-screen text-white font-sans overflow-x-hidden">
+    <div className="relative min-h-screen text-white font-sans overflow-hidden">
       {/* Background */}
-      <div className="fixed inset-0 -z-10">
+      <div className="fixed inset-0 -z-10 overflow-hidden">
         <LightRays
           raysOrigin="top-center"
           raysColor="#8edaff"

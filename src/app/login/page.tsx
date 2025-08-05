@@ -44,9 +44,9 @@ export default function Login() {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col md:flex-row text-white">
-      {/* LightRays Background */}
-      <div className="fixed inset-0 -z-10">
+    <div className="relative min-h-screen flex flex-col md:flex-row text-white overflow-hidden">
+      {/* RippleGrid Background */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
         <RippleGrid
           enableRainbow={false}
           gridColor="#ffffff"
@@ -60,7 +60,7 @@ export default function Login() {
       </div>
 
       {/* Left Section */}
-      <div className="md:w-3/5 relative p-4 md:p-6 flex items-center justify-center min-h-[25vh] md:min-h-screen">
+      <div className="md:w-3/5 relative p-4 md:p-6 flex items-center justify-center min-h-[25vh] md:min-h-screen overflow-hidden">
         <div className="relative z-10 max-w-xl mx-auto text-center md:text-left">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -130,7 +130,7 @@ export default function Login() {
       </div>
 
       {/* Right Section */}
-      <div className="md:w-3/5 p-4 sm:p-6 md:p-8 flex items-center justify-center min-h-[60vh] md:min-h-screen relative">
+      <div className="md:w-3/5 p-4 sm:p-6 md:p-8 flex items-center justify-center min-h-[60vh] md:min-h-screen relative overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}

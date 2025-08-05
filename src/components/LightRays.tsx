@@ -127,6 +127,9 @@ const LightRays = ({
       cleanupFunctionRef.current = null;
     }
 
+    // Check if we're on mobile
+    const isMobile = window.innerWidth < 768;
+
     const initializeWebGL = async () => {
       if (!containerRef.current) return;
 
@@ -135,7 +138,7 @@ const LightRays = ({
       if (!containerRef.current) return;
 
       const renderer = new Renderer({
-        dpr: Math.min(window.devicePixelRatio, 2),
+        dpr: Math.min(window.devicePixelRatio, isMobile ? 1 : 2), // Lower DPR for mobile
         alpha: true,
       });
       rendererRef.current = renderer;
@@ -424,17 +427,26 @@ void main() {
   ]);
 
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
+    const handleMouseMove = (e: MouseEvent | TouchEvent) => {
       if (!containerRef.current || !rendererRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = (e.clientY - rect.top) / rect.height;
+      
+      // Handle both mouse and touch events
+      const clientX = 'touches' in e ? e.touches[0].clientX : (e as MouseEvent).clientX;
+      const clientY = 'touches' in e ? e.touches[0].clientY : (e as MouseEvent).clientY;
+      
+      const x = (clientX - rect.left) / rect.width;
+      const y = (clientY - rect.top) / rect.height;
       mouseRef.current = { x, y };
     };
 
     if (followMouse) {
-      window.addEventListener("mousemove", handleMouseMove);
-      return () => window.removeEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mousemove", handleMouseMove as EventListener);
+      window.addEventListener("touchmove", handleMouseMove as EventListener, { passive: true });
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove as EventListener);
+        window.removeEventListener("touchmove", handleMouseMove as EventListener);
+      };
     }
   }, [followMouse]);
 

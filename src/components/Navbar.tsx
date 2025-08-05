@@ -191,7 +191,8 @@ export default function Navbar({
             animate="visible"
             exit="exit"
             variants={menuVariants}
-            className="fixed inset-0 z-[100] backdrop-blur-md flex flex-col items-center justify-center"
+            className="fixed inset-0 z-[100] backdrop-blur-md flex flex-col items-center justify-center overflow-hidden"
+            style={{ position: 'fixed', height: '100vh', width: '100vw', top: 0, left: 0 }}
           >
             <motion.button
               aria-label="Close menu"
