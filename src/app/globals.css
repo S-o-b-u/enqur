@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #000000;
+  color: #ffffff;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  user-select: none;
+}
+
+/* Smooth page transitions */
+.page-transition {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.page-transition.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Enhanced view transition API */
+@supports (view-transition-name: none) {
+  .page-transition {
+    transition: none;
+  }
+
+  ::view-transition-group(root) {
+    animation-duration: 0.7s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  ::view-transition-new(root) {
+    mask: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><defs><filter id="blur"><feGaussianBlur stdDeviation="2"/></filter></defs><circle cx="0" cy="0" r="18" fill="white" filter="url(%23blur)"/></svg>') top left / 0 no-repeat;
+    mask-origin: content-box;
+    animation: scale 1s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top left;
+  }
+
+  ::view-transition-old(root) {
+    animation: scale 1s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top left;
+    z-index: -1;
+  }
+
+  @keyframes scale {
+    to {
+      mask-size: 350vmax;
+    }
+  }
+}
+
+/* Custom scrollbar */
+body::-webkit-scrollbar {
+  width: 8px;
+  display: none;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #01b3ff84; /* sky-400 */
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #0ea5e9; /* sky-500 */
+}
+
+/* Focus styles */
+*:focus {
+  outline: 2px solid #8edaff;
+  outline-offset: 2px;
+}
+
+/* Button hover effects */
+button {
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+/* Scroll to top button effects */
+.scroll-to-top-glow {
+  filter: drop-shadow(0 0 8px rgba(142, 218, 255, 0.6));
+}
+
+/* Input focus effects */
+input, textarea, select {
+  transition: all 0.2s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  transform: scale(1.02);
+}
+
+/* Card hover effects */
+.card {
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(139, 92, 246, 0.2);
+}
+
+/* Glassmorphism effects */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
