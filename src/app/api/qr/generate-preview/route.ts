@@ -74,7 +74,7 @@ export async function GET(req: Request) {
     // Draw QR modules - centered in the 240x280 canvas
     const qrStartX = (canvas.width - size) / 2; // Center horizontally
     const qrStartY = 20; // Position from top
-    
+
     for (let row = 0; row < qrData.modules.size; row++) {
       for (let col = 0; col < qrData.modules.size; col++) {
         if (qrData.modules.get(col, row)) {
@@ -141,7 +141,8 @@ export async function GET(req: Request) {
       console.warn("Logo not found:", err);
     }
 
-    return new Response(canvas.toBuffer("image/png"), {
+    const pngBuffer = canvas.toBuffer("image/png");
+    return new Response(new Uint8Array(pngBuffer), {
       headers: { "Content-Type": "image/png" },
     });
   } catch (error) {
